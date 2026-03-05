@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>GRWPurchPurchaseOrderController</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+class GRWPurchPurchaseOrderController extends PurchPurchaseOrderController
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>contruct</Name>
+				<Source><![CDATA[
+    public static GRWPurchPurchaseOrderController contruct()
+    {
+        return new GRWPurchPurchaseOrderController();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>main</Name>
+				<Source><![CDATA[
+    public static void main(Args _args)
+    {
+        SrsReportRunController              formLetterController = GRWPurchPurchaseOrderController::contruct();
+        GRWPurchPurchaseOrderController     controller;
+
+        if(TradeFormHelper::isCalledFromForm(_args, formStr(VendPurchOrderJournalListPage)))
+        {
+            _args.record(VendPurchOrderJour::findRecId(_args.record().RecId));
+        }
+
+        controller = formLetterController;
+        controller.parmLoadFromSysLastValue(false);
+        controller.initArgs(_args, ssrsReportStr(GRWPurchPurchaseOrder,Report));
+        //if (_args.record().TableId == tableNum(VendPurchOrderJour))
+        //{
+        //    orderJour = _args.record();
+        //    purchTable =  orderJour.purchTable();
+        //    select firstonly purchLine
+        //        where purchLine.PurchId == purchTable.PurchId
+        //        && (purchLine.AssetId || purchLine.AssetGroup);
+        //}
+        //if (purchLine)
+        //{
+        //}
+        controller.parmDialogCaption("@SYS319737"); // Loading box caption
+        //controller.parmReportContract().parmPrintSettings().fileName("@SYS319737" + "file");
+        //controller.parmReportContract().parmPrintSettings().caption("@SYS319737" + "cap");
+        //controller.parmReportContract().parmPrintSettings().parmFileName("@SYS319737" + "filename");
+        if(classIdGet(_args.caller()) == classNum(PurchPurchOrderJournalPrint))
+        {
+            formLetterController.renderingCompleted += eventhandler(PurchPurchOrderJournalPrint::renderingCompleted);
+        }
+
+        formLetterController.startOperation();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>outputReport</Name>
+				<Source><![CDATA[
+    protected void outputReport()
+    {
+        SRSCatalogItemName  reportDesign;
+        reportDesign = ssrsReportStr(GRWPurchPurchaseOrder,Report);
+        this.parmReportName(reportDesign);
+        this.parmReportContract().parmReportName(reportDesign);
+        //this.parmReportContract().parmReportCaption("@SYS319737");
+        formletterReport.parmReportRun().settingDetail().parmReportFormatName(reportDesign);
+        formletterReport.parmReportRun().settingDetail().parmPrintJobSettings().fileName("@SYS319737");
+        //formletterReport.parmReportRun().settingDetail().parmPrintJobSettings().caption("Orden cap");
+        //formletterReport.parmReportRun().settingDetail().parmIdentificationText("Orden identi");
+        //formletterReport.parmReportRun().settingDetail().parmPrintJobSettings().parmFileName("Order filena");
+        super();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>initFormLetterReport</Name>
+				<Source><![CDATA[
+    protected void initFormLetterReport()
+    {
+        PurchLine purchLine;
+        VendPurchOrderJour orderJour;
+        PurchTable purchTable;
+        str orderstr = vendPurchOrderJour.PurchId;
+        RecordSortedList            recordListLocal;
+        PurchPurchaseOrderContract  purchPurchaseOrderContract = contract as PurchPurchaseOrderContract;
+        this.parmShowDialog(true);
+        if (args.record().TableId == tableNum(VendPurchOrderJour))
+        {
+            orderJour = args.record();
+            purchTable =  orderJour.purchTable();
+            select firstonly purchLine
+                where purchLine.PurchId == purchTable.PurchId
+                && (purchLine.AssetId || purchLine.AssetGroup);
+        }
+        else
+        {
+            recordListLocal = this.splitToRecordList();
+            recordListLocal.first(orderJour);
+            purchTable =  orderJour.purchTable();
+            select firstonly purchLine
+                    where purchLine.PurchId == purchTable.PurchId
+                    && (purchLine.AssetId || purchLine.AssetGroup);
+        }
+        if (!purchLine)
+        {
+            this.parmShowDialog(false);
+        }
+
+        if (classIdGet(this.parmArgs().caller()) == classNum(PurchPurchOrderJournalPrint))
+        {
+            purchPurchOrderJournalPrint = this.parmArgs().caller();
+        }
+        super();
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
